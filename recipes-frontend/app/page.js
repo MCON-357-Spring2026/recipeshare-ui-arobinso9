@@ -1,26 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import RecipeList from "@/components/RecipeList";
+import { useEffect, useState } from "react";
+import { fetchRecipes } from "@/lib/api";  //<--- import the API helper function
+import RecipeCardList from "@/components/RecipeCardList";  //<--- import a component to render the list
+import Alert from "@mui/material/Alert"; //<--- import MUI Alert for error messages
+import RecipeList from "@/components/RecipeCardList";
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/recipes")
-      .then((response) => response.json())
-      .then((data) => setRecipes(data))
-      .catch((error) => console.log("Error fetching recipes:", error));
+    fetchRecipes()
+      .then(setRecipes)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        My Recipes
-      </Typography>
-      <RecipeList recipes={recipes} />
-    </Container>
+    <main>
+      <h1>RecipeShare</h1>
+      {loading ? (
+        <p>Loading recipes...</p>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : (
+        <RecipeList recipes={recipes} />
+      )}
+    </main>
   );
 }
